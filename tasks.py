@@ -1,19 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
-from app.schemas.task import TaskCreate, Task
-from typing import List
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app import schemas
 
 router = APIRouter()
 
-tasks_db = []
+fake_tasks = []
 
-@router.post("/", response_model=Task)
-def create_task(task: TaskCreate):
-    task_id = len(tasks_db) + 1
-    task_data = task.dict()
-    task_data.update({"id": task_id})
-    tasks_db.append(task_data)
-    return task_data
+@router.post("/")
+def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
+    fake_tasks.append(task)
+    return {"message": "Task created", "task": task}
 
-@router.get("/", response_model=List[Task])
-def get_tasks():
-    return tasks_db
