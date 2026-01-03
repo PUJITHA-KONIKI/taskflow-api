@@ -16,7 +16,7 @@ Validation: Pydantic
 Version Control: Git, GitHub
 High-Level Flow:
 Client
- ↓
+ ↓    
 API Request
  ↓
 JWT Authentication
