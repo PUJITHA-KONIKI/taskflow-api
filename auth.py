@@ -1,15 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+from app. fastapi import APIRouter, Depends, HTTPException, status
+from app.fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from app.sqlalchemy.orm import Session
+from app.datetime import datetime, timedelta
+from app.jose import JWTError, jwt
+from app.passlib.context import CryptContext
 import os
 
 from app.database import get_db
 from app import schemas, user
 
-from dotenv import load_dotenv
+from app. dotenv import load_dotenv
 load_dotenv()
 
 
