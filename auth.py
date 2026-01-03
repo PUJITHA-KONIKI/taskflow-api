@@ -1,26 +1,27 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.schemas.user import UserCreate, UserLogin
-from app.models.user import User
-from app.auth.jwt_handler import sign_jwt
-from app.auth.hashing import Hash
+from sqlalchemy.orm import Session
+from passlib.context import CryptContext
+from app.database import get_db
+from app import schemas, user
 
 router = APIRouter()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# In-memory users for example (replace with DB)
-users_db = []
+def hash_password(password: str):
+    return pwd_context.hash(password)
 
-@router.post("/signup")
-def signup(user: UserCreate):
-    if any(u["email"] == user.email for u in users_db):
+@router.post("/register")
+def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
+    existing_user = db.query(user.User).filter(user.User.email == data.email).first()
+    if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    hashed_password = Hash.bcrypt(user.password)
-    users_db.append({"email": user.email, "password": hashed_password, "role": user.role})
-    return {"message": "User created successfully"}
 
-@router.post("/login")
-def login(user: UserLogin):
-    db_user = next((u for u in users_db if u["email"] == user.email), None)
-    if not db_user or not Hash.verify(db_user["password"], user.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = sign_jwt(db_user["email"])
-    return {"token": token}
+    new_user = user.User(
+        email=data.email,
+        password=hash_password(data.password)
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"message": "User registered successfully"}
+
